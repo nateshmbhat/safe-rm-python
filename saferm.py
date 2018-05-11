@@ -1,7 +1,6 @@
 #!/usr/bin/python3
-
 import time ,os , sys
-import psutil , datetime 
+import psutil , datetime  , argparse
 
 if(os.name=='nt'):
     exit(10) ; 
@@ -18,6 +17,5 @@ if(os.getpid()!=os.getpgid(0)):
     print('passing it to system rm') ; 
     os.system('rm ' + commandstring) ; 
     exit(0) ; 
-    
-    
-    
+
+parser = argparse.ArgumentParser() ;
