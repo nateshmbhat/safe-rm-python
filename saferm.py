@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import time ,os , sys
-import psutil , datetime  , argparse , urllib3
+import psutil , datetime  , argparse , urllib3 , shutil
+import glob , re
 
 if(os.name=='nt'):
     exit(10) ; 
@@ -44,20 +45,69 @@ def argument_parser():
     return args ; 
 
 
+    
 
-# t = time.localtime() ; 
-# timeString = "{}-{:0>2}-{:0>2}T{:0>2}:{:0>2}:{:0>2}".format(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
-# pathString = 
+args = argument_parser() ;
 
+trashfilespath = "~/.local/share/Trash/files" ; 
+trashinfopath= "~/.local/share/Trash/info"
 
-
-
-# trashpath = "~/.local/share/Trash"
-# trashinfoString = '''
-# [Trash Info]
-# Path=/home/natesh/Documents/Smart%20India%20Hackathon.docx
-# DeletionDate={}
-# '''
+t = time.localtime() ; 
+timeString = "{}-{:0>2}-{:0>2}T{:0>2}:{:0>2}:{:0>2}".format(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
 
 
-args = argument_parser() ; 
+#Uncomment if glob patterns don't resolve in args.files
+
+#>>>>>>>>>>>>>>>>>>>>.
+
+# fileslist = [] ; #Final list after resolving patterns 
+
+# for i in range(len(args.files)):
+#     fileslist.extend(glob.glob(args.files[i])) ; 
+
+# print(">>>>>" , fileslist) ;
+
+#<<<<<<<<<<<<<<<<<<<<<
+    
+fullpaths = {os.path.abspath(path) for path in args.files}
+
+for path in fullpaths:
+    if not os.path.exists(path):
+        print("rm: cannot remove '{}': No such file or directory".format(path)) ; 
+        exit(10) ; 
+
+
+for path in fullpaths:
+
+    #handle duplicates already present in the trash 
+    newpath = os.path.join(trashfilespath , os.path.basename(path)) ; 
+
+    trashfiles = os.listdir(trashfilespath) ; 
+    for file in trashfiles:
+        filename_no_extention , extention  = os.path.splitext(file)
+        match = re.match('{}\.(\d+)$'.format(path) , filename_no_extention )
+
+        if(match):
+            duplicate_number = int(match.groups()[0])+1 ; 
+            newpath = os.path.join(os.path.split(path)[0] , filename_no_extention+'.'+str(duplicate_number)+extention) ; 
+            print(newpath) ; 
+
+        print(newpath) ; 
+
+
+        # Copy the file to the trashfilespath before removing it
+        # shutil.copy2(path , newpath ) ; 
+
+            
+
+    trashinfoString = '''
+    [Trash Info]
+    Path={0}/home/natesh/Documents/Smart%20India%20Hackathon.docx
+    DeletionDate={1}
+    '''.format(path.replace(' ' , '%20') , timeString)
+
+
+print(fullpaths) ;
+
+pathString = ''''''
+
