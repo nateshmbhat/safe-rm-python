@@ -23,23 +23,34 @@ if(os.getpid()!=os.getpgid(0)):
 
 def argument_parser():
     parser = argparse.ArgumentParser() ; 
+    parser.add_help  = '''
+    
+    This is custom custom script to remove files safely without the risk of losing them permanently as what happens when we use rm in linux. 
+    The script puts the deleted files safely in the trash like if you were deleting your file in your file manager.
+    
+    '''
 
     parser.add_argument('files' , nargs='+' ,  help="The files which need to be removed ")  ; 
 
     parser.add_argument('-f' , '--force' ,action="store_true" , required=False ,help="ignore nonexistent files and arguments, never prompt")
 
-    parser.add_argument('-i' , action="store_true" , help="prompt before every removal " , required=False) ; 
+    parser.add_argument('-i' , '--interactive' , action="store_true" , help="prompt before every removal " , required=False) ; 
     
     parser.add_argument('-I' , action="store_true" , help="prompt once before removing more than three files, or when  removing  recursively;  less intrusive than -i, while still giving protection against most mistakes" , required=False)
 
-    parser.add_argument('--interactive' , action="store_true" , help="prompt according to WHEN: never, once (-I), or always (-i); without WHEN, prompt always" , required=False) 
+    # parser.add_argument('--interactive[=WHEN]' , action="store_true" , help="prompt according to WHEN: never, once (-I), or always (-i); without WHEN, prompt always" , required=False) 
 
     parser.add_argument('-r' ,'-R', '--recursive' ,  action="store_true" ,help="remove directories and their contents recursively" , required=False)
 
-    parser.add_argument('-d' , help='remove empty directories',  action="store_true" ,required=False) ; 
+    parser.add_argument('-d' , '--dir', help='remove empty directories',  action="store_true" ,required=False) ; 
 
-    parser.add_argument('-v' , help="explain what is being done" ,  action="store_true" ,required=False) ; 
+    parser.add_argument('-v' , '--verbose' , help="explain what is being done" ,  action="store_true" ,required=False) ; 
 
+    parser.add_argument('--one-file-system' , help="explain what is being done" ,  action="store_true" ,required=False) ; 
+
+    parser.add_argument('--no-preserve-root' , help="explain what is being done" ,  action="store_true" ,required=False) ; 
+
+    parser.add_argument('--preserve-root' , help="when removing a hierarchy recursively, skip any directory that is on a file system different from that of the corresponding command line argument" ,  action="store_true" ,required=False) ; 
     
     args = parser.parse_args() ; 
     return args ; 
@@ -48,7 +59,20 @@ def argument_parser():
     
 
 args = argument_parser() ;
+rm_command_string_without_files = 'rm '
+print(args) ; 
 
+if(args.force):rm_command_string_without_files+=" -f "
+if(args.dir):rm_command_string_without_files+=" -d "
+if(args.I ):rm_command_string_without_files+=" -I "
+if(args.interactive):rm_command_string_without_files+=" -i "
+if(args.recursive):rm_command_string_without_files+=" -r "
+if(args.no_preserve_root):rm_command_string_without_files+=" --no-preserve-root "
+if(args.preserve_root):rm_command_string_without_files+=" --preserve-root "
+if(args.one_file_system):rm_command_string_without_files+=" --one-file-system "
+
+
+exit() ; 
 trashfilespath = os.path.expanduser("~/.local/share/Trash/files") ; 
 trashinfopath= os.path.expanduser("~/.local/share/Trash/info") ; 
 
@@ -120,6 +144,12 @@ for path in fullpaths:
 
  
     print("newpath = " , newpath) ; 
+
+
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    #Copy the current file to newpath 
+    shutil.copy2(path , '/home/natesh/Trashtesting/files') ; 
+    
 
         # Copy the file to the trashfilespath before removing it
         # shutil.copy2(path , newpath ) ; 
