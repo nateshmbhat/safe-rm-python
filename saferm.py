@@ -120,14 +120,15 @@ fullpaths = {os.path.abspath(path) for path in args.files}
 
 trashfiles = os.listdir(trashfilespath) ; 
 
-for path in fullpaths:
-
-    if not os.path.exists(path):
-        print("rm: cannot remove '{}': No such file or directory".format(path)) ; 
-        continue ; 
+for index , path in enumerate(fullpaths):
 
     file_to_delete = os.path.basename(path) ; 
     filename_no_extention , extention  = os.path.splitext(file_to_delete)
+
+    if not os.path.exists(path):
+        print("rm: cannot remove '{}': No such file or directory".format(args.files[index])) ; 
+        continue ; 
+
 
     newpath = os.path.join(trashfilespath , os.path.basename(path)) ; 
     match_dot_with_filename_RE = re.compile('{}\.(\d+)$'.format(filename_no_extention))
@@ -168,7 +169,8 @@ for path in fullpaths:
     #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     #Copy the current file to newpath 
 
-    dummpy_new_path =  '/home/natesh/Trashtesting/files/'+file_to_delete
+    # dummpy_new_path =  '/home/natesh/Trashtesting/files/'+file_to_delete
+    dummpy_new_path = newpath ; 
     print(path , dummpy_new_path) ;
     try:
         if(os.path.isdir(path)):
@@ -203,7 +205,8 @@ for path in fullpaths:
 
     trashinfoString = '''[Trash Info]
 Path={0}
-DeletionDate={1}'''.format(path.replace(' ' , '%20') , timeString)
+DeletionDate={1}
+'''.format(path.replace(' ' , '%20') , timeString)
 
     infofile = os.path.join(trashinfopath , os.path.split(newpath)[1]+'.trashinfo')
     with open(infofile , 'w') as infofileobj:
