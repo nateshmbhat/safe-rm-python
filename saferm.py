@@ -1,7 +1,19 @@
 #!/usr/bin/python3
 import time ,os , sys
 import psutil , datetime  , argparse , urllib3 , shutil
-import glob , re
+import glob , re , errno , subprocess
+from pwd import getpwuid
+
+def find_owner(filename):
+    return getpwuid(os.stat(filename).st_uid).pw_name
+
+def copyanything(src, dst):
+    try:
+        shutil.copytree(src, dst)
+    except OSError as exc: # python >2.5
+        if exc.errno == errno.ENOTDIR:
+            shutil.copy(src, dst)
+        else: raise
 
 if(os.name=='nt'):
     exit(10) ; 
@@ -19,6 +31,13 @@ if(os.getpid()!=os.getpgid(0)):
     os.system('rm ' + commandstring) ; 
     exit(0) ; 
 
+
+def is_dir_empty(path):
+    for dirpath, dirnames, files in os.walk(dir):
+        if files:
+            return False; 
+        else:
+            return True
 
 
 def argument_parser():
@@ -56,11 +75,8 @@ def argument_parser():
     return args ; 
 
 
-    
-
 args = argument_parser() ;
 rm_command_string_without_files = 'rm '
-print(args) ; 
 
 if(args.force):rm_command_string_without_files+=" -f "
 if(args.dir):rm_command_string_without_files+=" -d "
@@ -71,8 +87,9 @@ if(args.no_preserve_root):rm_command_string_without_files+=" --no-preserve-root 
 if(args.preserve_root):rm_command_string_without_files+=" --preserve-root "
 if(args.one_file_system):rm_command_string_without_files+=" --one-file-system "
 
+print(rm_command_string_without_files) ; 
 
-exit() ; 
+
 trashfilespath = os.path.expanduser("~/.local/share/Trash/files") ; 
 trashinfopath= os.path.expanduser("~/.local/share/Trash/info") ; 
 
@@ -95,18 +112,14 @@ timeString = "{}-{:0>2}-{:0>2}T{:0>2}:{:0>2}:{:0>2}".format(t.tm_year, t.tm_mon,
     
 fullpaths = {os.path.abspath(path) for path in args.files}
 
-for path in fullpaths:
-    if not os.path.exists(path):
-        print("rm: cannot remove '{}': No such file or directory".format(path)) ; 
-        exit(10) ; 
-
-
-
-
 
 trashfiles = os.listdir(trashfilespath) ; 
 
 for path in fullpaths:
+
+    if not os.path.exists(path):
+        print("rm: cannot remove '{}': No such file or directory".format(path)) ; 
+        continue ; 
 
     file_to_delete = os.path.basename(path) ; 
     filename_no_extention , extention  = os.path.splitext(file_to_delete)
@@ -146,15 +159,42 @@ for path in fullpaths:
     print("newpath = " , newpath) ; 
 
 
+
     #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     #Copy the current file to newpath 
-    shutil.copy2(path , '/home/natesh/Trashtesting/files') ; 
-    
 
-        # Copy the file to the trashfilespath before removing it
-        # shutil.copy2(path , newpath ) ; 
+    dummpy_new_path =  '/home/natesh/Trashtesting/files/'+file_to_delete
+    print(path , dummpy_new_path) ;
+    try:
+        if(os.path.isdir(path)):
+            if(not args.recursive):
+                print("rm: cannot remove '{}': Is a directory".format(file_to_delete)) ; 
+                continue
 
-            
+        copyanything(path , dummpy_new_path)  ;            
+
+
+    except(PermissionError) as E:
+
+        print(E , "trying to directly move the file or folder if -r is set ") ;
+        
+        try:
+            shutil.move(path, dummpy_new_path ) ; 
+        except PermissionError as E1:
+            print(E1 , 'cant move the file doesnt have both read and write perm ') ; 
+            continue ;
+
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+    #os.system returns 0 if no error else returns int 
+    if(os.system(rm_command_string_without_files+path)):
+        print("Error in removing {}".format(path)) ; 
+        continue ; 
+
+
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    # Save the deleted file information in the trashinfopath 
 
     trashinfoString = '''
     [Trash Info]
