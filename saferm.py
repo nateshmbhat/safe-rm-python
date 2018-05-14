@@ -4,8 +4,10 @@ import psutil , datetime  , argparse , urllib3 , shutil
 import glob , re , errno , subprocess
 from pwd import getpwuid
 
+
 def find_owner(filename):
     return getpwuid(os.stat(filename).st_uid).pw_name
+
 
 def copyanything(src, dst):
     try:
@@ -15,8 +17,11 @@ def copyanything(src, dst):
             shutil.copy(src, dst)
         else: raise
 
+
+
 if(os.name=='nt'):
     exit(10) ; 
+
 
 commandstring = '' ;  
 
@@ -196,11 +201,16 @@ for path in fullpaths:
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     # Save the deleted file information in the trashinfopath 
 
-    trashinfoString = '''
-    [Trash Info]
-    Path={0}/home/natesh/Documents/Smart%20India%20Hackathon.docx
-    DeletionDate={1}
-    '''.format(path.replace(' ' , '%20') , timeString)
+    trashinfoString = '''[Trash Info]
+Path={0}
+DeletionDate={1}'''.format(path.replace(' ' , '%20') , timeString)
+
+    infofile = os.path.join(trashinfopath , os.path.split(newpath)[1]+'.trashinfo')
+    with open(infofile , 'w') as infofileobj:
+        infofileobj.write(trashinfoString) ; 
+
+
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
 print("fullpaths = " , fullpaths) ;
