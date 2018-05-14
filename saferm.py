@@ -49,8 +49,8 @@ def argument_parser():
 
 args = argument_parser() ;
 
-trashfilespath = "~/.local/share/Trash/files" ; 
-trashinfopath= "~/.local/share/Trash/info"
+trashfilespath = os.path.expanduser("~/.local/share/Trash/files") ; 
+trashinfopath= os.path.expanduser("~/.local/share/Trash/info") ; 
 
 t = time.localtime() ; 
 timeString = "{}-{:0>2}-{:0>2}T{:0>2}:{:0>2}:{:0>2}".format(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
@@ -77,23 +77,49 @@ for path in fullpaths:
         exit(10) ; 
 
 
+
+
+
+trashfiles = os.listdir(trashfilespath) ; 
+
 for path in fullpaths:
 
-    #handle duplicates already present in the trash 
-    newpath = os.path.join(trashfilespath , os.path.basename(path)) ; 
+    file_to_delete = os.path.basename(path) ; 
+    filename_no_extention , extention  = os.path.splitext(file_to_delete)
 
-    trashfiles = os.listdir(trashfilespath) ; 
-    for file in trashfiles:
-        filename_no_extention , extention  = os.path.splitext(file)
-        match = re.match('{}\.(\d+)$'.format(path) , filename_no_extention )
+    newpath = os.path.join(trashfilespath , os.path.basename(path)) ; 
+    match_dot_with_filename_RE = re.compile('{}\.(\d+)$'.format(filename_no_extention))
+
+
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    #Detect file name collisions and keep adding the required duplicate numbers to the duplicate_number list to find the max one later . 
+
+    duplicate_number = set(); 
+    match_flag = False ; 
+    if(file_to_delete in trashfiles):
+        duplicate_number.add(1) ; 
+        match_flag = True ; 
+
+    for trashfile in trashfiles:
+        match = match_dot_with_filename_RE.match(trashfile) ; 
 
         if(match):
-            duplicate_number = int(match.groups()[0])+1 ; 
-            newpath = os.path.join(os.path.split(path)[0] , filename_no_extention+'.'+str(duplicate_number)+extention) ; 
-            print(newpath) ; 
+            match_flag = True ; 
+            duplicate_number.add( int(match.groups()[0])+1 ) ; 
 
-        print(newpath) ; 
+    #<<<<<<<<<<<<<<<<<<<<<<<<<<<<,
+    
+            
+    #If duplicate exists , then new file name should be with dot followed by max(duplicate_number) followed by the original exten
+    if(match_flag):
+        newpath = os.path.join(os.path.split(trashfilespath)[0] , filename_no_extention+'.'+str(max(duplicate_number))) ; 
+        if(file_to_delete.endswith(extention)):
+            newpath+=extention
 
+        print("newpath after handling duplicates = " , newpath) ; 
+
+ 
+    print("newpath = " , newpath) ; 
 
         # Copy the file to the trashfilespath before removing it
         # shutil.copy2(path , newpath ) ; 
@@ -107,7 +133,7 @@ for path in fullpaths:
     '''.format(path.replace(' ' , '%20') , timeString)
 
 
-print(fullpaths) ;
+print("fullpaths = " , fullpaths) ;
 
 pathString = ''''''
 
