@@ -215,8 +215,3 @@ DeletionDate={1}
 
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-
-print("fullpaths = " , fullpaths) ;
-
-pathString = ''''''
-
