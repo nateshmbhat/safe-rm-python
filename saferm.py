@@ -101,20 +101,6 @@ trashinfopath= os.path.expanduser("~/.local/share/Trash/info") ;
 t = time.localtime() ; 
 timeString = "{}-{:0>2}-{:0>2}T{:0>2}:{:0>2}:{:0>2}".format(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
 
-
-#Uncomment if glob patterns don't resolve in args.files
-
-#>>>>>>>>>>>>>>>>>>>>.
-
-# fileslist = [] ; #Final list after resolving patterns 
-
-# for i in range(len(args.files)):
-#     fileslist.extend(glob.glob(args.files[i])) ; 
-
-# print(">>>>>" , fileslist) ;
-
-#<<<<<<<<<<<<<<<<<<<<<
-    
 fullpaths = {os.path.abspath(path) for path in args.files}
 
 
