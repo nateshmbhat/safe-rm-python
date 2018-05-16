@@ -4,6 +4,23 @@ import psutil , datetime  , argparse , urllib3 , shutil
 import glob , re , errno , subprocess
 from pwd import getpwuid
 
+if(os.name=='nt'):
+    exit(10) ; 
+
+commandstring = '' ;  
+
+for arg in sys.argv:
+    if ' ' in arg:
+        commandstring+= '"{}" '.format(arg) ;
+    else:
+        commandstring+="{} ".format(arg) ; 
+
+
+if(os.getpid()!=os.getpgid(0)):
+    print('passing it to system rm') ; 
+    os.system('rm ' + commandstring) ; 
+    exit(0) ; 
+
 
 def find_owner(filename):
     return getpwuid(os.stat(filename).st_uid).pw_name
@@ -19,22 +36,8 @@ def copyanything(src, dst):
 
 
 
-if(os.name=='nt'):
-    exit(10) ; 
 
 
-commandstring = '' ;  
-
-for arg in sys.argv:
-    if ' ' in arg:
-        commandstring+= '"{}" '.format(arg) ;
-    else:
-        commandstring+="{} ".format(arg) ; 
-
-if(os.getpid()!=os.getpgid(0)):
-    print('passing it to system rm') ; 
-    os.system('rm ' + commandstring) ; 
-    exit(0) ; 
 
 
 def is_dir_empty(path):

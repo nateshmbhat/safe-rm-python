@@ -8,6 +8,7 @@ This solves accidental removals. The script is meant to be used as an alias with
 + handles all arguments that rm can take
 + handles the file name collisions with the files already in trash
 + handles some permission issues automatically
++ if rm is called from any other script or indirectly then the system 'rm' command is used automatically
 + shows the appropriate error messages like those which arise in `rm` 
 
 
